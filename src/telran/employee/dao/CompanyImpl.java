@@ -3,6 +3,7 @@ package telran.employee.dao;
 import telran.employee.model.Employee;
 import telran.employee.model.SalesManager;
 
+import java.util.Arrays;
 import java.util.function.Predicate;
 
 public class CompanyImpl implements Company{
@@ -30,17 +31,18 @@ public class CompanyImpl implements Company{
     @Override
     public Employee removeEmployee(int id) {
 
+        Employee victim = null;
         for (int i = 0; i < size; i++) {
             if (employees[i] == null || employees[i].getId() != id) {
                 continue;
             }
-            Employee victim = employees[i];
-            employees[i] = employees[--size];
-            employees[size] = null;
-            return victim;
+            victim = employees[i];
+            System.arraycopy(employees, i + 1, employees, i, employees.length - i - 1);
+            employees[--size] = null;
+            break;
         }
 
-        return null;
+        return victim;
     }
 
     @Override
@@ -93,13 +95,7 @@ public class CompanyImpl implements Company{
 
     @Override
     public Employee[] findEmployeesHoursGreaterThan(int hours) {
-        Predicate<Employee> predicate = new Predicate<Employee>() {
-            @Override
-            public boolean test(Employee employee) {
-                return employee.getHours() > hours;
-            }
-        };
-        return findEmployeesPredicate(predicate);
+        return findEmployeesPredicate(e -> e.getHours() > hours);
     }
 
     @Override
@@ -109,20 +105,14 @@ public class CompanyImpl implements Company{
     }
 
     private Employee[] findEmployeesPredicate(Predicate<Employee> predicate){
-        int count = 0;
+
+        Employee[] resEmployees = new Employee[size];
+        int j = 0;
         for (int i = 0; i < size; i++){
-            if (predicate.test(employees[i])) {
-                count++;
-            }
-        }
-        Employee[] resEmployees = new Employee[count];
-        for (int i = 0, j = 0; j < resEmployees.length; i++){
             if (predicate.test(employees[i])) {
                 resEmployees[j++] = employees[i];
             }
         }
-        return resEmployees;
-
-
+        return Arrays.copyOf(resEmployees, j);
     }
 }
