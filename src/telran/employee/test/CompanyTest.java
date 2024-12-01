@@ -11,6 +11,7 @@ import telran.employee.model.SalesManager;
 import telran.employee.model.WageEmployee;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class CompanyTest {
 
@@ -86,10 +87,6 @@ public class CompanyTest {
     void testFindEmployeesHoursGreaterThan(){
         Employee[] actual = company.findEmployeesHoursGreaterThan(100);
         Employee[] expected = {employees[0], employees[1], employees[2]};
-//        assertEquals(expected.length, actual.length);
-//        for (int i = 0; i < expected.length; i++) {
-//            assertEquals(expected[i], actual[i]);
-//        }
         assertArrayEquals(expected, actual);
     }
 
