@@ -4,31 +4,34 @@ import telran.employee.model.Employee;
 import telran.employee.model.SalesManager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 public class CompanyImpl implements Company {
 
-    private List<Employee> employees;
+    private Set<Employee> employees;
     private int capacity;
 
 
     public CompanyImpl(int capacity) {
         this.capacity = capacity;
-        employees = new ArrayList<>();
+        employees = new HashSet<>();
     }
 
+    //O(1)
     @Override
     public boolean addEmployee(Employee employee) {
         if (employee == null
-                || capacity == employees.size()
-                || findEmployee(employee.getId()) != null) {
+                || capacity == employees.size()) {
             return false;
         }
 
         return employees.add(employee);
     }
 
+    //O(n)
     @Override
     public Employee removeEmployee(int id) {
 
@@ -37,6 +40,7 @@ public class CompanyImpl implements Company {
         return victim;
     }
 
+    //O(n)
     @Override
     public Employee findEmployee(int id) {
         for (Employee employee : employees) {
@@ -47,11 +51,13 @@ public class CompanyImpl implements Company {
         return null;
     }
 
+    //O(1)
     @Override
     public int quantity() {
         return employees.size();
     }
 
+    //O(n)
     @Override
     public double totalSalary() {
         double sum = 0;

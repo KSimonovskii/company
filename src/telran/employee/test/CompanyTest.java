@@ -10,6 +10,9 @@ import telran.employee.model.Manager;
 import telran.employee.model.SalesManager;
 import telran.employee.model.WageEmployee;
 
+import java.util.Arrays;
+import java.util.Comparator;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -18,6 +21,7 @@ public class CompanyTest {
     private Company company;
     private Employee[] employees;
     private final int capacity = 5;
+    private final Comparator<Employee> comparator = (e1, e2) -> Integer.compare(e1.getId(), e2.getId());
 
     @BeforeEach
     void setUp() {
@@ -87,6 +91,7 @@ public class CompanyTest {
     void testFindEmployeesHoursGreaterThan(){
         Employee[] actual = company.findEmployeesHoursGreaterThan(100);
         Employee[] expected = {employees[0], employees[1], employees[2]};
+        Arrays.sort(actual, comparator);
         assertArrayEquals(expected, actual);
     }
 
@@ -94,6 +99,7 @@ public class CompanyTest {
     void testFindEmployeesSalaryBetween(){
         Employee[] actual = company.findEmployeesSalaryBetween(5000, 8000);
         Employee[] expected = {employees[1], employees[2]};
+        Arrays.sort(actual,comparator);
         assertArrayEquals(expected, actual);
     }
 
