@@ -43,12 +43,11 @@ public class CompanyImpl implements Company {
     //O(n)
     @Override
     public Employee findEmployee(int id) {
-        for (Employee employee : employees) {
-            if (employee.getId() == id) {
-                return employee;
-            }
-        }
-        return null;
+
+        return employees.stream()
+                .filter(employee -> employee.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
     //O(1)
@@ -60,30 +59,25 @@ public class CompanyImpl implements Company {
     //O(n)
     @Override
     public double totalSalary() {
-        double sum = 0;
-        for (Employee employee : employees) {
-            sum += employee.calcSalary();
-        }
-        return sum;
+        return employees.stream()
+                .map(Employee::calcSalary)
+                .reduce(0., (sum, salary) -> sum + salary);
     }
 
     @Override
     public double totalSales() {
-        double res = 0;
-        for (Employee employee : employees) {
-            if (employee instanceof SalesManager manager) {
-                res += manager.getSalesValue();
-            }
-        }
-        return res;
+        return employees.stream()
+                .filter(employee -> employee instanceof SalesManager)
+                .map(employee -> (SalesManager) employee)
+                .map(SalesManager::getSalesValue)
+                .reduce(0., (sum, sales) -> sum + sales);
     }
 
     @Override
     public void printEmployees() {
         System.out.println("==== Company in " + COUNTRY + " ====");
-        for (Employee employee : employees) {
-            System.out.println(employee);
-        }
+        employees.stream()
+                        .forEach(System.out::println);
     }
 
 
@@ -99,15 +93,8 @@ public class CompanyImpl implements Company {
     }
 
     private Employee[] findEmployeesPredicate(Predicate<Employee> predicate){
-        List<Employee> res = new ArrayList<>();
-        for (Employee employee: employees
-             ) {
-            if (predicate.test(employee)){
-                res.add(employee);
-            }
-
-        }
-
-        return res.toArray(new Employee[0]);
+        return employees.stream()
+                .filter(employee -> predicate.test(employee))
+                .toArray(Employee[]::new);
     }
 }
