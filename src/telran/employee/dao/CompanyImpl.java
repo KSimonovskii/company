@@ -60,8 +60,8 @@ public class CompanyImpl implements Company {
     @Override
     public double totalSalary() {
         return employees.stream()
-                .map(Employee::calcSalary)
-                .reduce(0., (sum, salary) -> sum + salary);
+                .mapToDouble(Employee::calcSalary)
+                .sum();
     }
 
     @Override
@@ -69,15 +69,14 @@ public class CompanyImpl implements Company {
         return employees.stream()
                 .filter(employee -> employee instanceof SalesManager)
                 .map(employee -> (SalesManager) employee)
-                .map(SalesManager::getSalesValue)
-                .reduce(0., (sum, sales) -> sum + sales);
+                .mapToDouble(SalesManager::getSalesValue)
+                .sum();
     }
 
     @Override
     public void printEmployees() {
         System.out.println("==== Company in " + COUNTRY + " ====");
-        employees.stream()
-                        .forEach(System.out::println);
+        employees.forEach(System.out::println);
     }
 
 
