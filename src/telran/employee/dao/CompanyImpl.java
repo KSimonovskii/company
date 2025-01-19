@@ -3,17 +3,20 @@ package telran.employee.dao;
 import telran.employee.model.Employee;
 import telran.employee.model.SalesManager;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
 
 public class CompanyImpl implements Company {
 
+    private ReadWriteLock rwLock = new ReentrantReadWriteLock();
+    private Lock rLock = rwLock.readLock();
+    private Lock wLock = rwLock.writeLock();
+
     private Set<Employee> employees;
     private int capacity;
-
 
     public CompanyImpl(int capacity) {
         this.capacity = capacity;
@@ -23,63 +26,97 @@ public class CompanyImpl implements Company {
     //O(1)
     @Override
     public boolean addEmployee(Employee employee) {
-        if (employee == null
-                || capacity == employees.size()) {
-            return false;
+        wLock.lock();
+        try {
+            if (employee == null
+                    || capacity == employees.size()) {
+                return false;
+            }
+            return employees.add(employee);
+        } finally {
+            wLock.unlock();
         }
-
-        return employees.add(employee);
     }
 
     //O(n)
     @Override
     public Employee removeEmployee(int id) {
-
-        Employee victim = findEmployee(id);
-        employees.remove(victim);
-        return victim;
+        wLock.lock();
+        try {
+            Employee victim = findEmployee(id);
+            employees.remove(victim);
+            return victim;
+        } finally {
+            wLock.unlock();
+        }
     }
 
     //O(n)
     @Override
     public Employee findEmployee(int id) {
 
-        return employees.stream()
-                .filter(employee -> employee.getId() == id)
-                .findFirst()
-                .orElse(null);
+        rLock.lock();
+        try {
+            return employees.stream()
+                    .filter(employee -> employee.getId() == id)
+                    .findFirst()
+                    .orElse(null);
+        } finally {
+            rLock.unlock();
+        }
     }
 
     //O(1)
     @Override
     public int quantity() {
-        return employees.size();
+        rLock.lock();
+        try {
+            return employees.size();
+        } finally {
+            rLock.unlock();
+        }
     }
 
     //O(n)
     @Override
     public double totalSalary() {
-        return employees.stream()
-                .mapToDouble(Employee::calcSalary)
-                .sum();
+
+        rLock.lock();
+        try {
+            return employees.stream()
+                    .mapToDouble(Employee::calcSalary)
+                    .sum();
+        } finally {
+            rLock.unlock();
+        }
     }
 
     @Override
     public double totalSales() {
-        return employees.stream()
-                .filter(employee -> employee instanceof SalesManager)
-                .map(employee -> (SalesManager) employee)
-                .mapToDouble(SalesManager::getSalesValue)
-                .sum();
+
+        rLock.lock();
+        try {
+            return employees.stream()
+                    .filter(employee -> employee instanceof SalesManager)
+                    .map(employee -> (SalesManager) employee)
+                    .mapToDouble(SalesManager::getSalesValue)
+                    .sum();
+        } finally {
+            rLock.unlock();
+        }
+
     }
 
     @Override
     public void printEmployees() {
         System.out.println("==== Company in " + COUNTRY + " ====");
-        employees.forEach(System.out::println);
+        rLock.lock();
+        try {
+            employees.forEach(System.out::println);
+        } finally {
+            rLock.unlock();
+        }
     }
-
-
 
     @Override
     public Employee[] findEmployeesHoursGreaterThan(int hours) {
@@ -92,8 +129,14 @@ public class CompanyImpl implements Company {
     }
 
     private Employee[] findEmployeesPredicate(Predicate<Employee> predicate){
-        return employees.stream()
-                .filter(employee -> predicate.test(employee))
-                .toArray(Employee[]::new);
+        rLock.lock();
+        try {
+            return employees.stream()
+                    .filter(employee -> predicate.test(employee))
+                    .toArray(Employee[]::new);
+        } finally {
+            rLock.unlock();
+        }
+
     }
 }
